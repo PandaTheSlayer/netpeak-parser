@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Inspiring;
 use App\Modules\Parser\ParserClass;
 
+
 /*
 |--------------------------------------------------------------------------
 | Console Routes
@@ -20,5 +21,7 @@ Artisan::command('inspire', function () {
 
 Artisan::command('run-parser {url}', function ($url){
 	$parser = new ParserClass(new \GuzzleHttp\Client(), new \Symfony\Component\DomCrawler\Crawler());
-    $parser->getLinks($url);
+    $parser->parseCatalogLink($url);
+    $objects = $parser->parseObjects($parser->getNotVisitedLinks());
+    \App\Product::storeProducts($objects);
 });

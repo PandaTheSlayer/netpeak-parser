@@ -3,22 +3,18 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rule;
 
 class ParserLog extends Model
 {
 	protected $fillable = ['url'];
 
-	public function getLinks()
-	{
-
-	}
 	
 	public function storeObjLinks($links)
 	{
-		$parserLog = new static();
-		dd($links);
-
-
-		return $parserLog;
+		foreach ($links as $link){
+		    $model = new static;
+		    $model::firstOrCreate(['url' => $link]);
+        }
     }
 }

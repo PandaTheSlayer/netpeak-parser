@@ -20,7 +20,10 @@ class ParserClass
 		$this->crawler = $crawler;
 	}
 
-    public function getLinks($catalog)
+	/**
+     * Get all object links for 1 page
+     */
+    public function parseCatalogLink($catalog)
     {
 
         $result = $this->client->get($catalog, [
@@ -36,49 +39,50 @@ class ParserClass
             $links[] = $node->getAttributeNode('href')->value;
         }
 
-        //echo json_encode($this->parseObjects($links));
-		//var_dump($this->parseObjects($links));
 		$parserLog = new ParserLog();
 		$parserLog->storeObjLinks($links);
     }
 
+    /**
+     * Parse all of objects
+     */
     public function parseObjects(array $links)
 	{
 		$client = $this->client;
-		$fulfilled = [];
-		$rejected = [];
+
 
 		$requests = function ($links){
-//			foreach($links as $link){
-//				yield new Request('GET', $link, [
-//					'delay' => 2000
-//				]);
-//			}
-			for($i = 0; $i<5; $i++){
+			for($i = 0; $i<count($links); $i++){
 				yield new Request('GET', $links[$i], [
-					//'delay' => 1000
+					'delay' => 1000
 				]);
 			}
 		};
 
-//		$pool = new Pool($client, $requests($links), [
-//			'concurrency' => 5,
-//			'fulfilled' => function ($response) use (&$fulfilled){
-//				array_push($fulfilled, $response->getBody());
-//			},
-//			'rejected' => function ($response) use (&$rejected){
-//				array_push($rejected, $response->getStatus());
-//			}
-//		]);
-//
-//		$promise = $pool->promise();
-//		$promise->wait();
-//
-//		return array($fulfilled, $rejected);
-
 		$results = Pool::batch($client, $requests($links), ['concurrency' => 5]);
 
-		var_dump($results);
+		foreach ($results as $link){
+		    $crawler = new Crawler();
+		    $crawler->addHtmlContent($link->getBody());
+		    $nodes = $crawler->filter('ul.short-chars-l.flex')->children()->eq(3);
+		    $title = $crawler->filter('h1.detail-title')->text();
 
+		    foreach ($nodes as $node){
+		        $feature = explode(':', str_replace(array("\r", "\n"), '', $node->nodeValue));
+		        $descr[$feature[0]] = $feature[1];
+            }
+
+
+            $resultArr[] = [$title => $descr];
+        }
+
+        return $resultArr;
+
+	}
+
+    public function getNotVisitedLinks()
+    {
+        $links = \DB::table('parser_logs')->where('visited', '=', '0')->get()->pluck('url');
+        return $links->toArray();
 	}
 }

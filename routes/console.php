@@ -18,6 +18,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->describe('Display an inspiring quote');
 
-Artisan::command('run-parser {url}', function (ParserClass $parser, $url){
+Artisan::command('run-parser {url}', function ($url){
+	$parser = new ParserClass(new \GuzzleHttp\Client(), new \Symfony\Component\DomCrawler\Crawler());
     $parser->getLinks($url);
 });

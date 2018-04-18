@@ -19,9 +19,12 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->describe('Display an inspiring quote');
 
-Artisan::command('run-parser {url}', function ($url){
-	$parser = new ParserClass(new \GuzzleHttp\Client(), new \Symfony\Component\DomCrawler\Crawler());
-    $parser->parseCatalogLink($url);
+Artisan::command('run-parser', function (){
+    $config = Config::get('parser');
+	$parser = new ParserClass(new \GuzzleHttp\Client());
+    $parser->parseCatalogLink(
+        $config['url']
+    );
     $objects = $parser->parseObjects($parser->getNotVisitedLinks());
     \App\Product::storeProducts($objects);
 });

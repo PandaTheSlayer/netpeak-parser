@@ -20,7 +20,6 @@ class CreateProductsTable extends Migration
             $table->string('speed')->nullable();
             $table->string('energy_class')->nullable();
             $table->integer('program_count')->nullable();
-            $table->integer('linen_dry_count')->nullable();
         });
     }
 
